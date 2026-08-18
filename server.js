@@ -34,6 +34,32 @@ app.get('/', (req, res) => {
   res.send('Tutor backend funcionando ✅');
 });
 
+// ---------- TRADUCIR TEXTO ----------
+// Espera: { text, fromLanguage, toLanguage }
+app.post('/translate', async (req, res) => {
+  try {
+    const { text, fromLanguage, toLanguage } = req.body;
+    if (!text || !fromLanguage || !toLanguage) {
+      return res.status(400).json({ error: 'Faltan campos: text, fromLanguage y toLanguage' });
+    }
+
+    const systemPrompt = `Sos un traductor experto. Vas a traducir texto de ${fromLanguage} a ${toLanguage}.
+Respondé SOLO con JSON válido (sin markdown) con esta forma exacta:
+{
+  "translation": "la traducción del texto",
+  "notes": "si hay algo relevante para aprender (uso, matiz, pronunciación), explicalo brevemente en ${fromLanguage}. Si no hay nada relevante, string vacío."
+}`;
+
+    const parsed = await llamarClaude(systemPrompt, [
+      { role: 'user', content: text },
+    ]);
+    res.json(parsed);
+  } catch (error) {
+    console.error('Error en /translate:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ---------- CHAT (gratis y pago) ----------
 // Espera: { message, language, history }
 // La corrección siempre viaja en la respuesta; el cliente decide si la
