@@ -66,17 +66,21 @@ Respondé SOLO con JSON válido (sin markdown) con esta forma exacta:
 // muestra al toque (pago) o la junta para mostrar cada 10 mensajes (gratis).
 app.post('/chat', async (req, res) => {
   try {
-    const { message, language, history } = req.body;
+    const { message, language, history, nativeLanguage } = req.body;
     if (!message || !language) {
       return res.status(400).json({ error: 'Faltan campos: message y language' });
     }
+
+    const translationInstruction = nativeLanguage
+      ? `\n  "translation": "traducción de tu 'reply' al ${nativeLanguage}",`
+      : '';
 
     const systemPrompt = `Eres un tutor de idiomas experto en ${language}.
 Mantené una conversación natural en ${language}, como un hablante nativo charlando normal.
 No corrijas errores dentro de la charla misma.
 Respondé SOLO con JSON válido (sin markdown) con esta forma exacta:
 {
-  "reply": "tu respuesta conversacional en ${language}",
+  "reply": "tu respuesta conversacional en ${language}",${translationInstruction}
   "correction": "si hubo errores, explicá brevemente en español cuáles y la forma correcta. Si no hubo errores, string vacío."
 }`;
 
